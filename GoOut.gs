@@ -32,6 +32,7 @@ function checkGoOut() {
   Logger.log("getvalue: " + rangea.getValue());
   Logger.log("getvalue: " + rangef.getValue());
 
+  //帰宅/外出及び未処理/処理済の判別
   if (valuea == "Exit" && valuef == "") {
     //外出時の処理
     Logger.log(date00.format("HH:mm")+" 外出!");
