@@ -11,7 +11,7 @@ var sheet = SpreadsheetApp.getActiveSheet();
 //シートに変更があった時、帰宅/外出を判断して自動的に家電のON/OFFを行う ※要：これをトリガに登録すること！
 function checkGoOut() {
   //一時的にトリガーを消す
-  deleteTrigger("addDate");
+  deleteTrigger("checkGoOut");
   
   //時刻を取得
   var date00 = Moment.moment(); //現在日時
@@ -76,7 +76,7 @@ function checkGoOut() {
 
   //一時トリガー設定
   //sheetNameはUrlのhttps://docs.google.com/spreadsheets/d/hogehoge/edit#gid=0のhogehogeの部分
-  ScriptApp.newTrigger("addDate").forSpreadsheet("sheetName").onChange().create();
+  ScriptApp.newTrigger("checkGoOut").forSpreadsheet("sheetName").onChange().create();
 }
 
 //日時記入用関数
