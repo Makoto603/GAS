@@ -9,7 +9,7 @@
 var sheet = SpreadsheetApp.getActiveSheet();                 //アクティブシート名取得
 var sheetId = SpreadsheetApp.getActiveSpreadsheet().getId(); //アクティブシートID取得
 var iFtttId = "hogehoge";                                    //IFTTTのID 要個別修正 要:個別修正
-var mailAddress = 'hogehoge@gmail.com';                      //送信先のメールアドレス 要:個別修正
+var mailAddress = "hogehoge@gmail.com";                      //送信先のメールアドレス 要:個別修正
 
 //シートに変更があった時、帰宅/外出を判断して自動的に家電のON/OFFを行う ※要：これをトリガに登録すること！
 function checkGoOut() {
