@@ -4,12 +4,16 @@
 //注意事項2:日付ライブラリを使用しております。 事前にインストールをお願いします。
 //参考にしたサイト様：https://tonari-it.com/gas-moment-js-moment/
 
-//注意事項3:トリガにaddDate関数(シート変更時)とsetSchedules関数(日付ベース/８〜９時等)の登録が必要です。
+//注意事項3:トリガにaddDate関数(シート変更時)とsetSchedules関数(日付ベース/8〜9時等)の登録が必要です。
 
-var sheet = SpreadsheetApp.getActiveSheet();
+var sheet = SpreadsheetApp.getActiveSheet();                 //アクティブシート名取得
+var sheetId = SpreadsheetApp.getActiveSpreadsheet().getId(); //アクティブシートID取得
+var iFtttId = "hogehoge";                                    //IFTTTのID 要個別修正 要:個別修正
+var mailAddress = "hogehoge@gmail.com";                      //送信先のメールアドレス 要:個別修正
 
 //営業日確認用
 //出社日以外はトリガに登録させないようにする
+//Googleカレンダーから休日フラグの取得機能実装思考中・・・・※未実装
 function isBusinessDay(date){
   //土日判定
   if (date.getDay() == 0 || date.getDay() == 6) {
@@ -32,8 +36,7 @@ function addDate() {
   setDate(4, "H:m:s");
   Utilities.sleep(1000);
   //トリガー再設定
-  //SheetNameはUrlのhttps://docs.google.com/spreadsheets/d/hogehoge/edit#gid=0のhogehogeの部分
-  ScriptApp.newTrigger("addDate").forSpreadsheet("SheetName").onChange().create();
+  ScriptApp.newTrigger("addDate").forSpreadsheet(sheetId).onChange().create();
 }
 
 //日付記入用関数
@@ -86,7 +89,7 @@ function deleteTrigger(funcName) {
 
 //メール送信
 function mail(text) {
-  const recipient = 'hogehoge@gmail.com'; //送信先のメールアドレス
+  const recipient = mailAddress;
   const subject = 'HomeBOTだよ!';
   const body = text;
   const options = {name: 'GASからのお知らせだよ！'};
@@ -113,7 +116,7 @@ function checkEnterOrExit() {
   if (value == "Exit") {
     Logger.log(date00.format("HH:mm")+" 帰宅中！");
     //そのエリアにいない場合には，IFTTTのwebhookをかける
-    var url = "https://maker.ifttt.com/trigger/TrigerName/with/key/UserID";
+    var url = "https://maker.ifttt.com/trigger/TrigerName/with/key/" + iFtttId;
     UrlFetchApp.fetch(url);
     mail("エアコンつけたよ！");
     return;
