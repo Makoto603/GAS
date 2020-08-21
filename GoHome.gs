@@ -87,15 +87,6 @@ function deleteTrigger(funcName) {
   }
 }
 
-//メール送信
-function mail(text) {
-  const recipient = mailAddress;
-  const subject = 'HomeBOTだよ!';
-  const body = text;
-  const options = {name: 'GASからのお知らせだよ！'};
-  GmailApp.sendEmail(recipient, subject, body, options);
-}
-
 //帰宅チェック（最後のログがenterかexitのどちらかをチェック）
 function checkEnterOrExit() {
   //一時トリガーを消す
@@ -126,4 +117,13 @@ function checkEnterOrExit() {
     setTrigger("checkEnterOrExit", date02.format("HH"), date02.format("mm"));
     return;
   }
+}
+
+//メール送信
+function mail(text) {
+  const recipient = mailAddress;
+  const subject = 'HomeBOTだよ!';
+  const body = text;
+  const options = {name: 'GASからのお知らせだよ！'};
+  GmailApp.sendEmail(recipient, subject, body, options);
 }
