@@ -16,7 +16,7 @@ function checkGoOut() {
   //一時的にトリガーを消す
   deleteTrigger("checkGoOut");
 
-  var date00 = Moment.moment(); //現在日時を取得  
+  var date00 = Moment.moment(); //現在日時を取得
   var lastrow = sheet.getLastRow(); //最終記入済行取得
 
   //帰宅/外出の判別用
