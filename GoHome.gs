@@ -1,9 +1,7 @@
 //注意事項1:このスクリプトはIFTTTとの連携を前提として作られています。
 //参考にしたサイト様：https://qiita.com/ikechan/items/5e4bf2b9868d0d804af5
-
 //注意事項2:日付ライブラリを使用しております。 事前にインストールをお願いします。
 //参考にしたサイト様：https://tonari-it.com/gas-moment-js-moment/
-
 //注意事項3:トリガにaddDate関数(シート変更時)とsetSchedules関数(日付ベース/8〜9時等)の登録が必要です。
 
 var sheet = SpreadsheetApp.getActiveSheet();                 //アクティブシート名取得
