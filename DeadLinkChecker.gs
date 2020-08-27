@@ -78,9 +78,10 @@ function getLinks(sUrl,domain){
     }else if(!/^(http|https|ftp):\/\//.test(url)){
       url = siteURL + url;
     }
-
+    
     if(array.indexOf(url) == -1)
       array.push(url);
+      
   }
   return array;
 }
