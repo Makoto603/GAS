@@ -64,23 +64,23 @@ function getResponseCode(url,domain){
 }
 
 // リンク検索
-function getLinks(sUrl,domain){
-  var response = UrlFetchApp.fetch(sUrl);
+function getLinks(url,domain){
+  var response = UrlFetchApp.fetch(url);
   var html = response.getContentText();
   var regexp = new RegExp("<a.*?href=\"(.*?)\".*?>(.*?)</a>", "gim");
 
   var array = [];
   var match;
   while((match = regexp.exec(html)) != null){
-    var url = match[1];
-    if(/^(\/.*)/.test(url)){
+    var urls = match[1];
+    if(/^(\/.*)/.test(urls)){
       url = url.replace(/^(\/.*)/, domain + "$1");
-    }else if(!/^(http|https|ftp):\/\//.test(url)){
-      url = siteURL + url;
+    }else if(!/^(http|https|ftp):\/\//.test(urls)){
+      urls = siteURL + urls;
     }
     
-    if(array.indexOf(url) == -1)
-      array.push(url);
+    if(array.indexOf(urls) == -1)
+      array.push(urls);
       
   }
   return array;
