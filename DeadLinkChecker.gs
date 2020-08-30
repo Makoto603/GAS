@@ -1,7 +1,7 @@
 //参考URL：https://www.infoscoop.org/blogjp/2014/10/31/gas_deadlink_checker/
 
-var mailAddress = "hogehohe@gmail.com";                              // 送信先のメールアドレス
-var siteURL = ["https://hogehoge.co.jp/","https://hogehoge.ne.jp/"]; // チェック対象サイト
+var mailAddress = "hogehohe@gmail.com";                              // 送信先のメールアドレス 要：変更
+var siteURL = ["https://hogehoge.co.jp/","https://hogehoge.ne.jp/"]; // チェック対象サイト要：変更
 var domains = [];                                                    // 各ドメイン格納用
 var deadLinkList = [];                                               // エラーリンク格納用
 
