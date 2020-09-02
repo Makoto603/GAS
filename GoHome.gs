@@ -1,81 +1,97 @@
 //注意事項1:このスクリプトはIFTTTとの連携を前提として作られています。
 //参考にしたサイト様：https://qiita.com/ikechan/items/5e4bf2b9868d0d804af5
+
 //注意事項2:日付ライブラリを使用しております。 事前にインストールをお願いします。
 //参考にしたサイト様：https://tonari-it.com/gas-moment-js-moment/
-//注意事項3:トリガにaddDate関数(シート変更時)とsetSchedules関数(日付ベース/8〜9時等)の登録が必要です。
+
+//注意事項3:トリガにcheckGoOut関数(シート変更時)の登録が必要です。
 
 var sheet = SpreadsheetApp.getActiveSheet();                 //アクティブシート名取得
 var sheetId = SpreadsheetApp.getActiveSpreadsheet().getId(); //アクティブシートID取得
-var iFtttId = "hogehoge";                                    //IFTTTのID 要個別修正 要:個別修正
-var mailAddress = "hogehoge@gmail.com";                      //送信先のメールアドレス 要:個別修正
+var iFtttId = "hogehoge";                                    //IFTTTのID
+var mailAddress = "hogehoge@gmail.com";                      //送信先のメールアドレス
 
-//営業日確認用
-//出社日以外はトリガに登録させないようにする
-//Googleカレンダーから休日フラグの取得機能実装思考中・・・・※未実装
-function isBusinessDay(date){
-  //土日判定
-  if (date.getDay() == 0 || date.getDay() == 6) {
-    return false;
-  }
-  //日本の祝日判定
-  const calJa = CalendarApp.getCalendarById('ja.japanese#holiday@group.v.calendar.google.com');
-  if(calJa.getEventsForDay(date).length > 0){
-    return false;
-  }
-  return true;
-}
-
-//シートに変更があった時日付記入 ※要トリガ設定
-function addDate() {
+//シートに変更があった時、帰宅/外出を判断して自動的に家電のON/OFFを行う ※要：これをトリガに登録すること！
+function checkGoOut() {
   //一時的にトリガーを消す
-  deleteTrigger("addDate");
-  //日時追記
-  setDate(3, "yyyy/M/d");
-  setDate(4, "H:m:s");
+  deleteTrigger("checkGoOut");
+  
+  //多重処理回避
   Utilities.sleep(1000);
-  //トリガー再設定
-  ScriptApp.newTrigger("addDate").forSpreadsheet(sheetId).onChange().create();
+  
+  var date00 = Moment.moment(); //現在日時を取得  
+  var lastrow = sheet.getLastRow(); //最終記入済行取得
+
+  //帰宅/外出の判別用
+  var cola = 1; //1列目（A列）にenter or exitが入力されている
+  var rangea = sheet.getRange(lastrow, cola);
+  var valuea = rangea.getValue();
+
+  //未処理/処理済の判別用
+  var colf = 6; //6列目（F列）にfinish or ""が入力されている
+  var rangef = sheet.getRange(lastrow, colf);
+  var valuef = rangef.getValue();
+  
+  //動作ログ書き出し 外出/帰宅と未処理/処理済の確認ログ
+  Logger.log("getvalue: " + rangea.getValue());
+  Logger.log("getvalue: " + rangef.getValue());
+
+  if (valuea == "Exit" && valuef == "") {
+    //外出時の処理
+    Logger.log(date00.format("HH:mm")+" 外出!");
+    
+    //エアコンを消す
+    ifttt("AC_Off","エアコンけしたよ！");
+
+    //動作日時記録
+    setDate(3, "yyyy/M/d");
+    setDate(4, "H:m:s");
+
+    //処理済みフラグ記録
+    sheet.getRange(lastrow, colf).setValue("finish")
+    
+  } else if (valuea == "Enter"&& valuef == ""){
+    //帰宅時の処理
+    Logger.log(date00.format("HH:mm")+" 帰宅！");
+
+    //エアコンをつける
+    ifttt("AC_On","エアコンつけたよ！");
+
+    //多重Hook防止用の待機 必要かは分からない
+    Utilities.sleep(1000);
+
+    //電気をつける
+    ifttt("Light_On","電気つけたよ！");
+
+    //動作日時記録
+    setDate(3, "yyyy/M/d");
+    setDate(4, "H:m:s");
+
+    //処理済みフラグ記録
+    sheet.getRange(lastrow, colf).setValue("finish")
+  }
+  
+  //多重処理回避
+  Utilities.sleep(1000);
+
+  //一時トリガー再設定
+  ScriptApp.newTrigger("checkGoOut").forSpreadsheet(sheetId).onChange().create();
 }
 
-//日付記入用関数
+//日時記入用関数
 function setDate(col, format) {
   var lastrow = sheet.getLastRow();
-  if (sheet.getRange(lastrow, col).getValue() == "") {
+  Logger.log(lastrow+"行目に足したよ！");
+  if (sheet.getRange(lastrow, col).getValue() == "") 
     sheet.getRange(lastrow, col).setValue(formatDate(new Date(), format));
-    Logger.log(lastrow+"行目に足したよ！");
-  }
 }
 
-//日付フォーマット
+//日時フォーマット編集用関数
 function formatDate(date, format) {
   return Utilities.formatDate(date, 'Asia/Tokyo', format)
 }
 
-//毎日のトリガ登録用
-function setSchedules() {
-  //基本的に17:10以降の設定だがぶっちゃけ何時でも良いと思う！
-  if (isBusinessDay(new Date())){
-    setTrigger("checkEnterOrExit", 17, 10);
-    Logger.log("帰宅確認システムの起動設定したよ！");
-  }else{
-    Logger.log("今日はお休みだよ！");
-  }
-}
-
-//トリガが重複していた場合の手動削除用 ※ぶっちゃけいらないかも
-function deleteTriggerManual(){
-  deleteTrigger("checkEnterOrExit")
-}
-
-//指定時刻にトリガーを設定
-function setTrigger(funcName, h, m) {
-  var triggerDay = new Date();
-  triggerDay.setHours(h);
-  triggerDay.setMinutes(m);
-  ScriptApp.newTrigger(funcName).timeBased().at(triggerDay).create();
-}
-
-//トリガーを削除する関数(消さないと残る)
+//トリガー削除関数
 function deleteTrigger(funcName) {
   var triggers = ScriptApp.getProjectTriggers();
   for(var i=0; i < triggers.length; i++) {
@@ -85,39 +101,14 @@ function deleteTrigger(funcName) {
   }
 }
 
-//帰宅チェック（最後のログがenterかexitのどちらかをチェック）
-function checkEnterOrExit() {
-  //一時トリガーを消す
-  deleteTrigger("checkEnterOrExit");
-
-  //10分後の時刻を取得
-  var date00 = Moment.moment(); //現在日時
-  var date01 = Moment.moment(); //現在日時
-  var date02 = date01.add(10,"minute"); //現在日時 + 1０分
-
-  var lastrow = sheet.getLastRow();
-  var col = 1; //1列目（A列）にenter or exitが入力されている
-  var range = sheet.getRange(lastrow, col);
-  var value = range.getValue();
-  Logger.log("getvalue: " + range.getValue());
-
-  //帰宅中ならエアコンをつける
-  if (value == "Exit") {
-    Logger.log(date00.format("HH:mm")+" 帰宅中！");
-    //そのエリアにいない場合には，IFTTTのwebhookをかける
-    var url = "https://maker.ifttt.com/trigger/TrigerName/with/key/" + iFtttId;
+//IFTTT実行関数
+function ifttt(triger,text) {
+    var url = "https://maker.ifttt.com/trigger/" + triger + "/with/key/" + iFtttId;
     UrlFetchApp.fetch(url);
-    mail("エアコンつけたよ！");
-    return;
-  } else if (value == "Enter"){
-    Logger.log(date00.format("HH:mm")+" 仕事中！");
-    //トリガ再設定：帰宅していない場合１０分毎に繰返す
-    setTrigger("checkEnterOrExit", date02.format("HH"), date02.format("mm"));
-    return;
-  }
+    mail(text);
 }
 
-//メール送信
+//メール送信関数
 function mail(text) {
   const recipient = mailAddress;
   const subject = 'HomeBOTだよ!';
@@ -125,3 +116,4 @@ function mail(text) {
   const options = {name: 'GASからのお知らせだよ！'};
   GmailApp.sendEmail(recipient, subject, body, options);
 }
+
